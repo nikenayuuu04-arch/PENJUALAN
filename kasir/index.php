@@ -18,7 +18,6 @@
         <div class="panel-body">
             <div class="row">
 
-                <!-- TOTAL BARANG -->
                 <div class="col-md-3">
                     <div class="panel panel-info">
                         <div class="panel-heading">
@@ -36,42 +35,36 @@
                     </div>
                 </div>
 
-                <!-- TRANSAKSI SAYA -->
                 <div class="col-md-3">
                     <div class="panel panel-success">
                         <div class="panel-heading">
                             <h1>
-                                <i class="glyphicon glyphicon-shopping-cart"></i>
+                                <i class="glyphicon glyphicon-ok-circle"></i>
                                 <span class="pull-right">
                                     <?php
-                                        $uid = $_SESSION['user_id'];
-                                        $jual = mysqli_query(
-                                            $koneksi,
-                                            "SELECT * FROM penjualan WHERE user_id='$uid'"
-                                        );
-                                        echo mysqli_num_rows($jual);
+                                        $ready = mysqli_query($koneksi,"SELECT * FROM barang WHERE stok > 0");
+                                        echo mysqli_num_rows($ready);
                                     ?>
                                 </span>
                             </h1>
-                            Transaksi Saya
+                            Stok Tersedia
                         </div>
                     </div>
                 </div>
 
-                <!-- TOTAL TRANSAKSI -->
                 <div class="col-md-3">
-                    <div class="panel panel-warning">
+                    <div class="panel panel-danger">
                         <div class="panel-heading">
                             <h1>
-                                <i class="glyphicon glyphicon-stats"></i>
+                                <i class="glyphicon glyphicon-remove-circle"></i>
                                 <span class="pull-right">
                                     <?php
-                                        $all = mysqli_query($koneksi,"SELECT * FROM penjualan");
-                                        echo mysqli_num_rows($all);
+                                        $habis = mysqli_query($koneksi,"SELECT * FROM barang WHERE stok = 0");
+                                        echo mysqli_num_rows($habis);
                                     ?>
                                 </span>
                             </h1>
-                            Total Penjualan
+                            Stok Habis
                         </div>
                     </div>
                 </div>
