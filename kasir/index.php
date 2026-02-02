@@ -18,6 +18,7 @@
         <div class="panel-body">
             <div class="row">
 
+                <!-- TOTAL BARANG -->
                 <div class="col-md-3">
                     <div class="panel panel-info">
                         <div class="panel-heading">
@@ -65,6 +66,24 @@
                                 </span>
                             </h1>
                             Stok Habis
+                        </div>
+                    </div>
+                </div>
+
+                <!-- TOTAL TRANSAKSI -->
+                <div class="col-md-3">
+                    <div class="panel panel-warning">
+                        <div class="panel-heading">
+                            <h1>
+                                <i class="glyphicon glyphicon-stats"></i>
+                                <span class="pull-right">
+                                    <?php
+                                        $all = mysqli_query($koneksi,"SELECT * FROM penjualan");
+                                        echo mysqli_num_rows($all);
+                                    ?>
+                                </span>
+                            </h1>
+                            Total Penjualan
                         </div>
                     </div>
                 </div>
