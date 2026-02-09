@@ -36,7 +36,7 @@ include '../koneksi.php';
                     </div>
 
                     <hr>
-                    <h4>Daftar Barang (1 Transaksi Banyak Barang)</h4>
+                    <h4>Daftar Barang</h4>
 
                     <table class="table table-bordered">
                         <tr>
