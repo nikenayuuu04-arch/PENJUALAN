@@ -1,32 +1,35 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Nota Penjualan</title>
-    <link rel="stylesheet" type="text/css" href="../aset/css/bootstrap.css">
+    <title>Invoice Penjualan</title>
+    <link rel="stylesheet" href="../aset/css/bootstrap.css">
     <style>
         body{
             font-family: monospace;
-            background: #f7f7f7;
+            background: #ededed;
             display: flex;
             justify-content: center;
-            align-items: flex-start;
-            min-height: 100vh;
+            padding-top: 50px;
         }
-        .nota{
+        .invoice{
             width: 420px;
             background: #fff;
-            margin-top: 60px;
-            padding: 20px;
-            border: 1px dashed #000;
+            padding: 18px;
+            border: 2px dashed #333;
         }
-        .center{text-align:center;}
-        .right{text-align:right;}
-        hr{border-top:1px dashed #000;}
-        .row-item{
+        .text-center{text-align:center;}
+        .text-right{text-align:right;}
+        .line{
+            border-top: 1px dashed #000;
+            margin: 10px 0;
+        }
+        .flex{
             display:flex;
-            justify-content:space-between;
+            justify-content: space-between;
         }
-        .small{font-size:13px;}
+        .small{
+            font-size: 13px;
+        }
     </style>
 </head>
 <body>
@@ -36,7 +39,7 @@ include '../koneksi.php';
 
 $id = $_GET['id'];
 
-// ambil data header penjualan
+/* === DATA HEADER INVOICE === */
 $header = mysqli_fetch_assoc(mysqli_query($koneksi,"
     SELECT 
         p.id_jual,
@@ -45,73 +48,66 @@ $header = mysqli_fetch_assoc(mysqli_query($koneksi,"
         u.user_nama
     FROM penjualan p
     JOIN user u ON p.user_id = u.user_id
-    WHERE p.id_jual='$id'
+    WHERE p.id_jual = '$id'
 "));
-
-// ambil detail barang
-$detail = mysqli_query($koneksi,"
-    SELECT 
-        d.jumlah,
-        d.harga,
-        d.subtotal,
-        b.nama_barang
-    FROM penjualan_detail d
-    JOIN barang b ON d.id_barang = b.id_barang
-    WHERE d.id_jual='$id'
-");
 ?>
 
-<div class="nota">
+<div class="invoice">
 
-    <div class="center">
-        <b>Toko Bintang</b><br>
-        <span class="small">Sistem Informasi Penjualan</span>
+    <div class="text-center">
+        <h4 style="margin:0;">TOKO BINTANG</h4>
+        <span class="small">Nota Penjualan Kasir</span>
     </div>
 
-    <hr>
+    <div class="line"></div>
 
     <div class="small">
         No : INV-<?= $header['id_jual']; ?><br>
-        Tgl: <?= date('d/m/Y', strtotime($header['tgl_jual'])); ?><br>
-        Kasir: <?= $header['user_nama']; ?>
+        Tanggal : <?= date('d-m-Y H:i', strtotime($header['tgl_jual'])); ?><br>
+        Kasir : <?= $header['user_nama']; ?>
     </div>
 
-    <hr>
+    <div class="line"></div>
 
-    <?php while($d = mysqli_fetch_assoc($detail)){ ?>
+    <?php
+    /* === DATA DETAIL BARANG === */
+    $detail = mysqli_query($koneksi,"
+        SELECT 
+            b.nama_barang,
+            d.jumlah,
+            d.harga
+        FROM penjualan_detail d
+        JOIN barang b ON d.id_barang = b.id_barang
+        WHERE d.id_jual = '$id'
+    ");
+
+    while($d = mysqli_fetch_assoc($detail)){
+    ?>
         <div class="small"><?= $d['nama_barang']; ?></div>
-
-        <div class="row-item small">
-            <span>
-                Rp <?= number_format($d['harga']); ?> x<?= $d['jumlah']; ?>
-            </span>
-            <span>
-                Rp <?= number_format($d['subtotal']); ?>
-            </span>
+        <div class="flex small">
+            <span><?= $d['jumlah']; ?> x Rp <?= number_format($d['harga']); ?></span>
+            <span>Rp <?= number_format($d['jumlah'] * $d['harga']); ?></span>
         </div>
     <?php } ?>
 
-    <hr>
+    <div class="line"></div>
 
-    <div class="row-item">
-        <b>TOTAL</b>
+    <div class="flex">
+        <b>Total Bayar</b>
         <b>Rp <?= number_format($header['total_harga']); ?></b>
     </div>
 
-    <hr>
+    <div class="line"></div>
 
-    <div class="center small">
-        TERIMA KASIH<br>
-        SELAMAT BERBELANJA
+    <div class="text-center small">
+        *** TERIMA KASIH ***<br>
+        Selamat Berbelanja
     </div>
 
 </div>
 
 <script>
     window.print();
-    window.onafterprint = function(){
-        window.close();
-    }
 </script>
 
 </body>

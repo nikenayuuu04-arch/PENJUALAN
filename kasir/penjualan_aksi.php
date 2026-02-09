@@ -8,51 +8,63 @@ $user_id  = $_POST['user_id'];
 $id_barang = $_POST['id_barang'];
 $jumlah    = $_POST['jumlah'];
 
-$total = 0;
-
-/* SIMPAN HEADER */
-$simpan = mysqli_query($koneksi,"
-    INSERT INTO penjualan (tgl_jual, user_id, total_harga)
-    VALUES ('$tgl_jual','$user_id','0')
+/* ===============================
+   1. BUAT 1 INVOICE (penjualan)
+================================ */
+mysqli_query($koneksi,"
+    INSERT INTO penjualan (tgl_jual, total_harga, user_id)
+    VALUES ('$tgl_jual', 0, '$user_id')
 ");
 
-if(!$simpan){
-    die("Gagal simpan penjualan: ".mysqli_error($koneksi));
-}
-
-/* AMBIL ID JUAL OTOMATIS */
 $id_jual = mysqli_insert_id($koneksi);
+$total_semua = 0;
 
-/* SIMPAN DETAIL */
-for($i=0; $i<count($id_barang); $i++){
+/* ===============================
+   2. SIMPAN DETAIL BARANG
+================================ */
+for($i = 0; $i < count($id_barang); $i++){
 
     if($id_barang[$i] != "" && $jumlah[$i] > 0){
 
-        $q = mysqli_query($koneksi,"
-            SELECT harga_jual 
-            FROM barang 
-            WHERE id_barang='".$id_barang[$i]."'
-        ");
-        $b = mysqli_fetch_assoc($q);
+        $barang = mysqli_fetch_assoc(mysqli_query($koneksi,
+            "SELECT * FROM barang WHERE id_barang='$id_barang[$i]'"));
 
-        $harga    = $b['harga_jual'];
+        $harga = $barang['harga_jual'];
+        $stok  = $barang['stok'];
+
+        if($stok < $jumlah[$i]){
+            echo "<script>alert('Stok ".$barang['nama_barang']." tidak cukup');history.back();</script>";
+            exit;
+        }
+
         $subtotal = $harga * $jumlah[$i];
-        $total   += $subtotal;
+        $total_semua += $subtotal;
 
+        // simpan ke penjualan_detail
         mysqli_query($koneksi,"
             INSERT INTO penjualan_detail
             (id_jual, id_barang, jumlah, harga, subtotal)
             VALUES
-            ('$id_jual','".$id_barang[$i]."','".$jumlah[$i]."','$harga','$subtotal')
+            ('$id_jual', '$id_barang[$i]', '$jumlah[$i]', '$harga', '$subtotal')
+        ");
+
+        // kurangi stok
+        mysqli_query($koneksi,"
+            UPDATE barang
+            SET stok = stok - $jumlah[$i]
+            WHERE id_barang='$id_barang[$i]'
         ");
     }
 }
 
-/* UPDATE TOTAL */
+/* ===============================
+   3. UPDATE TOTAL INVOICE
+================================ */
 mysqli_query($koneksi,"
-    UPDATE penjualan 
-    SET total_harga='$total' 
-    WHERE id_jual='$id_jual'
+    UPDATE penjualan
+    SET total_harga = '$total_semua'
+    WHERE id_jual = '$id_jual'
 ");
 
-header("location:penjualan.php");
+echo "<script>alert('Transaksi berhasil disimpan');location='penjualan.php';</script>";
+?>
