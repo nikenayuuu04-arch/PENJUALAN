@@ -12,10 +12,10 @@ include '../koneksi.php';
     <div class="panel">
         <div class="panel-body">
 
-            <a href="penjualan_tambah.php" class="btn btn-sm btn-info pull-right">
-                Transaksi Baru
-            </a>
-            <br><br>
+        <a href="penjualan_tambah.php" class="btn btn-sm btn-info pull-right">
+            Transaksi Baru
+        </a>
+        <br><br>
 
             <table class="table table-bordered table-striped">
                 <thead>
@@ -24,14 +24,12 @@ include '../koneksi.php';
                         <th>ID Jual</th>
                         <th>Tanggal</th>
                         <th>Kasir</th>
-                        <th>Nama Barang</th>
-                        <th>Harga Barang</th>
-                        <th>Jumlah</th>
+                        <th>Barang</th>
+                        <th>Total Item</th>
                         <th>Total Harga</th>
-                        <th width="15%">Opsi</th>
+                        <th>Opsi</th>
                     </tr>
                 </thead>
-
                 <tbody>
                 <?php
                 $data = mysqli_query($koneksi,"
@@ -40,45 +38,34 @@ include '../koneksi.php';
                         p.tgl_jual,
                         p.total_harga,
                         u.user_nama,
-                        b.nama_barang,
-                        b.harga_jual
+                        GROUP_CONCAT(b.nama_barang SEPARATOR ', ') AS barang,
+                        SUM(d.jumlah) AS total_item
                     FROM penjualan p
                     JOIN user u ON p.user_id = u.user_id
-                    JOIN barang b ON p.id_barang = b.id_barang
+                    JOIN penjualan_detail d ON p.id_jual = d.id_jual
+                    JOIN barang b ON d.id_barang = b.id_barang
+                    GROUP BY p.id_jual
                     ORDER BY p.id_jual DESC
                 ");
 
                 $no = 1;
                 while($d = mysqli_fetch_array($data)){
-
-                    // hitung jumlah barang (tanpa kolom jumlah)
-                    $jumlah = 1;
-                    if($d['harga_jual'] > 0){
-                        $jumlah = $d['total_harga'] / $d['harga_jual'];
-                    }
                 ?>
-                    <tr>
-                        <td><?= $no++; ?></td>
-                        <td>INVOICE-<?= $d['id_jual']; ?></td>
-                        <td><?= date('d-m-Y', strtotime($d['tgl_jual'])); ?></td>
-                        <td><?= $d['user_nama']; ?></td>
-                        <td><?= $d['nama_barang']; ?></td>
-                        <td>Rp <?= number_format($d['harga_jual']); ?></td>
-                        <td><?= $jumlah; ?></td>
-                        <td>Rp <?= number_format($d['total_harga']); ?></td>
-                        <td class="text-center">
-
-                            <a href="penjualan_invoice.php?id=<?= $d['id_jual']; ?>"
-                               class="btn btn-warning btn-xs">
-                                Invoice
-                            </a>
-
-                        </td>
-                    </tr>
+                <tr>
+                    <td><?= $no++; ?></td>
+                    <td>INV-<?= $d['id_jual']; ?></td>
+                    <td><?= date('d-m-Y', strtotime($d['tgl_jual'])); ?></td>
+                    <td><?= $d['user_nama']; ?></td>
+                    <td><?= $d['barang']; ?></td>
+                    <td><?= $d['total_item']; ?></td>
+                    <td>Rp <?= number_format($d['total_harga']); ?></td>
+                    <td>
+                        <a href="penjualan_invoice.php?id=<?= $d['id_jual']; ?>" class="btn btn-warning btn-xs">Invoice</a>
+                    </td>
+                </tr>
                 <?php } ?>
                 </tbody>
             </table>
-
         </div>
     </div>
 </div>

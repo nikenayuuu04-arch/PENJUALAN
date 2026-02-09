@@ -95,58 +95,52 @@
     <!-- RIWAYAT PENJUALAN -->
     <div class="panel">
         <div class="panel-heading">
-            <h4>Riwayat Penjualan Terbaru</h4>
+            <h4>Riwayat Penjualan</h4>
         </div>
         <div class="panel-body">
 
             <table class="table table-bordered table-striped">
-                <tr>
-                    <th>No</th>
-                    <th>ID Jual</th>
-                    <th>Tanggal</th>
-                    <th>Kasir</th>
-                    <th>Nama Barang</th>
-                    <th>Harga Barang</th>
-                    <th>Jumlah</th>
-                    <th>Total Harga</th>
-                </tr>
+                <thead>
+                    <tr>
+                        <th>No</th>
+                        <th>Invoice</th>
+                        <th>Tanggal</th>
+                        <th>Kasir</th>
+                        <th>Jumlah Item</th>
+                        <th>Total Harga</th>
+                    </tr>
+                </thead>
 
+                <tbody>
                 <?php
-                    $data = mysqli_query($koneksi,"
-                        SELECT 
-                            p.id_jual,
-                            p.tgl_jual,
-                            p.total_harga,
-                            u.user_nama,
-                            b.nama_barang,
-                            b.harga_jual
-                        FROM penjualan p
-                        JOIN user u ON p.user_id = u.user_id
-                        JOIN barang b ON p.id_barang = b.id_barang
-                        ORDER BY p.id_jual DESC
-                   ");
+                $query = mysqli_query($koneksi,"
+                    SELECT 
+                        p.id_jual,
+                        p.tgl_jual,
+                        p.total_harga,
+                        u.user_nama,
+                        SUM(d.jumlah) AS total_item
+                    FROM penjualan p
+                    JOIN user u ON p.user_id = u.user_id
+                    JOIN penjualan_detail d ON p.id_jual = d.id_jual
+                    GROUP BY p.id_jual
+                    ORDER BY p.id_jual DESC
+                ");
 
-                    $no = 1;
-                    while ($d = mysqli_fetch_array($data)) {
-
-                        $jumlah = 1;
-                        if($d['harga_jual'] > 0){
-                            $jumlah = $d['total_harga'] / $d['harga_jual'];
-                        }
+                $no = 1;
+                while ($row = mysqli_fetch_assoc($query)) {
                 ?>
-
-                <tr>
-                    <td><?= $no++; ?></td>
-                        <td>INVOICE-<?= $d['id_jual']; ?></td>
-                        <td><?= date('d-m-Y', strtotime($d['tgl_jual'])); ?></td>
-                        <td><?= $d['user_nama']; ?></td>
-                        <td><?= $d['nama_barang']; ?></td>
-                        <td>Rp <?= number_format($d['harga_jual']); ?></td>
-                        <td><?= $jumlah; ?></td>
-                        <td>Rp <?= number_format($d['total_harga']); ?></td>
-                </tr>
-
+                    <tr>
+                        <td><?= $no++; ?></td>
+                        <td>INV-<?= $row['id_jual']; ?></td>
+                        <td><?= date('d-m-Y', strtotime($row['tgl_jual'])); ?></td>
+                        <td><?= $row['user_nama']; ?></td>
+                        <td><?= $row['total_item']; ?> item</td>
+                        <td>Rp <?= number_format($row['total_harga']); ?></td>
+                    </tr>
                 <?php } ?>
+                </tbody>
+
             </table>
 
         </div>

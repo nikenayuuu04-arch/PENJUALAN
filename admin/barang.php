@@ -6,7 +6,7 @@
 <div class="container">
     
     <div class="alert alert-info text-center">
-        <h4 style="margin-bottom:0px;">Data Penjualan</h4>
+        <h4 style="margin-bottom:0px;">Data Barang</h4>
     </div>
 
     <div class="panel">

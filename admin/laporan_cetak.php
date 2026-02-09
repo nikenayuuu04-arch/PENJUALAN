@@ -5,44 +5,66 @@ $dari   = $_GET['dari'];
 $sampai = $_GET['sampai'];
 ?>
 
-<h3>Laporan Penjualan</h3>
-<p>Dari <?= $dari ?> sampai <?= $sampai ?></p>
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Laporan Penjualan</title>
+    <style>
+        body{ font-family: Arial; }
+        table{ border-collapse: collapse; width:100%; }
+        th, td{ border:1px solid #000; padding:6px; }
+        th{ background:#eee; }
+    </style>
+</head>
+<body>
 
-<table border="1" cellpadding="6" cellspacing="0" width="100%">
+<h3>LAPORAN PENJUALAN</h3>
+<p>Dari <b><?= $dari ?></b> sampai <b><?= $sampai ?></b></p>
+
+<table>
     <tr>
         <th>No</th>
         <th>Invoice</th>
         <th>Tanggal</th>
         <th>Kasir</th>
-        <th>Barang</th>
-        <th>Harga</th>
-        <th>Total</th>
+        <th>Jumlah Item</th>
+        <th>Total Harga</th>
     </tr>
 
 <?php
-$no=1;
+$no = 1;
 $data = mysqli_query($koneksi,"
-    SELECT p.*, b.nama_barang, b.harga_jual, u.user_nama
+    SELECT 
+        p.id_jual,
+        p.tgl_jual,
+        p.total_harga,
+        u.user_nama,
+        SUM(d.jumlah) AS total_item
     FROM penjualan p
-    JOIN barang b ON p.id_barang = b.id_barang
     JOIN user u ON p.user_id = u.user_id
-    WHERE date(p.tgl_jual) >= '$dari' 
-    AND date(p.tgl_jual) <= '$sampai'
+    JOIN penjualan_detail d ON p.id_jual = d.id_jual
+    WHERE DATE(p.tgl_jual) BETWEEN '$dari' AND '$sampai'
+    GROUP BY p.id_jual
     ORDER BY p.id_jual DESC
 ");
 
-while($d=mysqli_fetch_array($data)){
+while($d = mysqli_fetch_assoc($data)){
 ?>
 <tr>
     <td><?= $no++; ?></td>
     <td>INV-<?= $d['id_jual']; ?></td>
     <td><?= $d['tgl_jual']; ?></td>
     <td><?= $d['user_nama']; ?></td>
-    <td><?= $d['nama_barang']; ?></td>
-    <td>Rp <?= number_format($d['harga_jual']); ?></td>
+    <td><?= $d['total_item']; ?> item</td>
     <td>Rp <?= number_format($d['total_harga']); ?></td>
 </tr>
 <?php } ?>
+
 </table>
 
-<script>window.print();</script>
+<script>
+    window.print();
+</script>
+
+</body>
+</html>

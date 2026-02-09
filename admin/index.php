@@ -93,42 +93,52 @@
     <!-- RIWAYAT PENJUALAN -->
     <div class="panel">
         <div class="panel-heading">
-            <h4>Riwayat Penjualan Terbaru</h4>
+            <h4>Riwayat Penjualan</h4>
         </div>
         <div class="panel-body">
 
             <table class="table table-bordered table-striped">
-                <tr>
-                    <th width="1%">No</th>
-                    <th>Tanggal</th>
-                    <th>Nama Barang</th>
-                    <th>Total Harga</th>
-                    <th>Nama Kasir</th>
-                </tr>
+                <thead>
+                    <tr>
+                        <th>No</th>
+                        <th>Invoice</th>
+                        <th>Tanggal</th>
+                        <th>Kasir</th>
+                        <th>Jumlah Item</th>
+                        <th>Total Harga</th>
+                    </tr>
+                </thead>
 
+                <tbody>
                 <?php
-                    $data = mysqli_query($koneksi,"
-                        SELECT penjualan.*, barang.nama_barang, user.user_nama
-                        FROM penjualan
-                        JOIN barang ON barang.id_barang = penjualan.id_barang
-                        JOIN user ON user.user_id = penjualan.user_id
-                        ORDER BY id_jual DESC
-                        LIMIT 10
-                    ");
+                $query = mysqli_query($koneksi,"
+                    SELECT 
+                        p.id_jual,
+                        p.tgl_jual,
+                        p.total_harga,
+                        u.user_nama,
+                        SUM(d.jumlah) AS total_item
+                    FROM penjualan p
+                    JOIN user u ON p.user_id = u.user_id
+                    JOIN penjualan_detail d ON p.id_jual = d.id_jual
+                    GROUP BY p.id_jual
+                    ORDER BY p.id_jual DESC
+                ");
 
-                    $no = 1;
-                    while ($d = mysqli_fetch_array($data)) {
+                $no = 1;
+                while ($row = mysqli_fetch_assoc($query)) {
                 ?>
-
-                <tr>
-                    <td><?php echo $no++; ?></td>
-                    <td><?php echo $d['tgl_jual']; ?></td>
-                    <td><?php echo $d['nama_barang']; ?></td>
-                    <td>Rp <?php echo number_format($d['total_harga']); ?></td>
-                    <td><?php echo $d['user_nama']; ?></td>
-                </tr>
-
+                    <tr>
+                        <td><?= $no++; ?></td>
+                        <td>INV-<?= $row['id_jual']; ?></td>
+                        <td><?= date('d-m-Y', strtotime($row['tgl_jual'])); ?></td>
+                        <td><?= $row['user_nama']; ?></td>
+                        <td><?= $row['total_item']; ?> item</td>
+                        <td>Rp <?= number_format($row['total_harga']); ?></td>
+                    </tr>
                 <?php } ?>
+                </tbody>
+
             </table>
 
         </div>

@@ -1,72 +1,56 @@
-<?php 
+<?php
 include 'header.php';
 include '../koneksi.php';
 ?>
 
 <div class="container">
-    <div class="panel">
-        <div class="panel-heading">
-            <h4>Tambah Penjualan</h4>
-        </div>
-        <div class="panel-body">
+    <h4>Transaksi Penjualan</h4>
 
-            <form method="post" action="penjualan_aksi.php">
+    <form action="penjualan_simpan.php" method="POST">
+        <table class="table table-bordered">
+            <thead>
+                <tr>
+                    <th>Barang</th>
+                    <th>Jumlah</th>
+                    <th>Aksi</th>
+                </tr>
+            </thead>
+            <tbody id="barang">
+                <tr>
+                    <td>
+                        <select name="id_barang[]" class="form-control" required>
+                            <?php
+                            $barang = mysqli_query($koneksi,"SELECT * FROM barang");
+                            while($b = mysqli_fetch_array($barang)){
+                            ?>
+                            <option value="<?= $b['id_barang']; ?>">
+                                <?= $b['nama_barang']; ?> - Rp <?= number_format($b['harga_jual']); ?>
+                            </option>
+                            <?php } ?>
+                        </select>
+                    </td>
+                    <td>
+                        <input type="number" name="jumlah[]" class="form-control" value="1" required>
+                    </td>
+                    <td>
+                        <button type="button" class="btn btn-danger btn-sm" onclick="hapus(this)">X</button>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
 
-                <div class="form-group">
-                    <label>Tanggal</label>
-                    <input type="date" name="tgl_jual" class="form-control" required>
-                </div>
-
-                <div class="form-group">
-                    <label>Kasir</label>
-                    <select name="user_id" class="form-control" required>
-                        <option value="">- Pilih Kasir -</option>
-                        <?php
-                        $u = mysqli_query($koneksi,"SELECT * FROM user");
-                        while($us=mysqli_fetch_array($u)){
-                        ?>
-                        <option value="<?= $us['user_id']; ?>">
-                            <?= $us['user_nama']; ?>
-                        </option>
-                        <?php } ?>
-                    </select>
-                </div>
-
-                <hr>
-                <h4>Daftar Barang</h4>
-
-                <table class="table table-bordered">
-                    <tr>
-                        <th>Barang</th>
-                        <th>Jumlah</th>
-                    </tr>
-
-                    <?php for($i=0;$i<5;$i++){ ?>
-                    <tr>
-                        <td>
-                            <select name="id_barang[]" class="form-control">
-                                <option value="">- Pilih Barang -</option>
-                                <?php
-                                $b = mysqli_query($koneksi,"SELECT * FROM barang");
-                                while($br=mysqli_fetch_array($b)){
-                                ?>
-                                <option value="<?= $br['id_barang']; ?>">
-                                    <?= $br['nama_barang']; ?> (stok: <?= $br['stok']; ?>)
-                                </option>
-                                <?php } ?>
-                            </select>
-                        </td>
-                        <td>
-                            <input type="number" name="jumlah[]" class="form-control" min="1">
-                        </td>
-                    </tr>
-                    <?php } ?>
-                </table>
-
-                <input type="submit" value="Simpan Penjualan" class="btn btn-primary">
-                <a href="penjualan.php" class="btn btn-default">Kembali</a>
-
-            </form>
-        </div>
-    </div>
+        <button type="button" class="btn btn-success btn-sm" onclick="tambah()">+ Barang</button>
+        <br><br>
+        <button type="submit" class="btn btn-primary">Simpan Transaksi</button>
+    </form>
 </div>
+
+<script>
+function tambah(){
+    let html = document.querySelector('#barang tr').cloneNode(true);
+    document.getElementById('barang').appendChild(html);
+}
+function hapus(el){
+    el.parentElement.parentElement.remove();
+}
+</script>

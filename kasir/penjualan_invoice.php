@@ -36,24 +36,29 @@ include '../koneksi.php';
 
 $id = $_GET['id'];
 
-$data = mysqli_fetch_assoc(mysqli_query($koneksi,"
+// ambil data header penjualan
+$header = mysqli_fetch_assoc(mysqli_query($koneksi,"
     SELECT 
         p.id_jual,
         p.tgl_jual,
         p.total_harga,
-        u.user_nama,
-        b.nama_barang,
-        b.harga_jual
+        u.user_nama
     FROM penjualan p
     JOIN user u ON p.user_id = u.user_id
-    JOIN barang b ON p.id_barang = b.id_barang
     WHERE p.id_jual='$id'
 "));
 
-$jumlah = 1;
-if($data['harga_jual'] > 0){
-    $jumlah = $data['total_harga'] / $data['harga_jual'];
-}
+// ambil detail barang
+$detail = mysqli_query($koneksi,"
+    SELECT 
+        d.jumlah,
+        d.harga,
+        d.subtotal,
+        b.nama_barang
+    FROM penjualan_detail d
+    JOIN barang b ON d.id_barang = b.id_barang
+    WHERE d.id_jual='$id'
+");
 ?>
 
 <div class="nota">
@@ -66,25 +71,31 @@ if($data['harga_jual'] > 0){
     <hr>
 
     <div class="small">
-        No : INV-<?= $data['id_jual']; ?><br>
-        Tgl: <?= date('d/m/Y', strtotime($data['tgl_jual'])); ?><br>
-        Kasir: <?= $data['user_nama']; ?>
+        No : INV-<?= $header['id_jual']; ?><br>
+        Tgl: <?= date('d/m/Y', strtotime($header['tgl_jual'])); ?><br>
+        Kasir: <?= $header['user_nama']; ?>
     </div>
 
     <hr>
 
-    <div><?= $data['nama_barang']; ?></div>
+    <?php while($d = mysqli_fetch_assoc($detail)){ ?>
+        <div class="small"><?= $d['nama_barang']; ?></div>
 
-    <div class="row-item small">
-        <span>Rp <?= number_format($data['harga_jual']); ?> x<?= $jumlah; ?></span>
-        <span>Rp <?= number_format($data['total_harga']); ?></span>
-    </div>
+        <div class="row-item small">
+            <span>
+                Rp <?= number_format($d['harga']); ?> x<?= $d['jumlah']; ?>
+            </span>
+            <span>
+                Rp <?= number_format($d['subtotal']); ?>
+            </span>
+        </div>
+    <?php } ?>
 
     <hr>
 
     <div class="row-item">
         <b>TOTAL</b>
-        <b>Rp <?= number_format($data['total_harga']); ?></b>
+        <b>Rp <?= number_format($header['total_harga']); ?></b>
     </div>
 
     <hr>
