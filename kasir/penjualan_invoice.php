@@ -59,7 +59,7 @@ if($data['harga_jual'] > 0){
 <div class="nota">
 
     <div class="center">
-        <b>TOKO RPL</b><br>
+        <b>Toko Bintang</b><br>
         <span class="small">Sistem Informasi Penjualan</span>
     </div>
 
